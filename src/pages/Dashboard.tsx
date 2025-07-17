@@ -15,7 +15,9 @@ import {
   TrendingUp,
   MapPin,
   Clock,
-  LogOut
+  LogOut,
+  Package,
+  FileX
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -41,6 +43,14 @@ interface DieselData {
   dieselIssued: number;
 }
 
+interface MaterialData {
+  date: string;
+  vehicleNo: string;
+  materialType: string;
+  quantity: number;
+  unit: string;
+}
+
 const Dashboard = () => {
   const [partnerInfo, setPartnerInfo] = useState<PartnerInfo | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
@@ -51,23 +61,63 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Mock data
-  const dispatchData: DispatchData[] = [
-    { date: "2024-01-15", vehicleNo: "OD-05-1234", inTime: "08:30", outTime: "17:45", quantity: 25.5, location: "Bhubaneswar" },
-    { date: "2024-01-14", vehicleNo: "OD-05-5678", inTime: "09:15", outTime: "18:20", quantity: 30.2, location: "Cuttack" },
-    { date: "2024-01-13", vehicleNo: "OD-05-9012", inTime: "07:45", outTime: "16:30", quantity: 28.7, location: "Rourkela" },
-    { date: "2024-01-12", vehicleNo: "OD-05-3456", inTime: "10:00", outTime: "19:15", quantity: 22.8, location: "Sambalpur" },
+  // Mock data with DD/MM/YYYY format
+  const allDispatchData: DispatchData[] = [
+    { date: "15/01/2025", vehicleNo: "OD-05-1234", inTime: "08:30", outTime: "17:45", quantity: 25.5, location: "Bhubaneswar" },
+    { date: "14/01/2025", vehicleNo: "OD-05-5678", inTime: "09:15", outTime: "18:20", quantity: 30.2, location: "Cuttack" },
+    { date: "13/01/2025", vehicleNo: "OD-05-9012", inTime: "07:45", outTime: "16:30", quantity: 28.7, location: "Rourkela" },
+    { date: "12/01/2025", vehicleNo: "OD-05-3456", inTime: "10:00", outTime: "19:15", quantity: 22.8, location: "Sambalpur" },
+    { date: "18/01/2025", vehicleNo: "OD-05-7890", inTime: "09:00", outTime: "18:00", quantity: 35.0, location: "Berhampur" },
+    { date: "25/01/2025", vehicleNo: "OD-05-1111", inTime: "08:15", outTime: "17:30", quantity: 28.5, location: "Angul" },
   ];
 
-  const dieselData: DieselData[] = [
-    { date: "2024-01-15", vehicleNo: "OD-05-1234", dieselIssued: 150 },
-    { date: "2024-01-14", vehicleNo: "OD-05-5678", dieselIssued: 175 },
-    { date: "2024-01-13", vehicleNo: "OD-05-9012", dieselIssued: 160 },
-    { date: "2024-01-12", vehicleNo: "OD-05-3456", dieselIssued: 140 },
+  const allDieselData: DieselData[] = [
+    { date: "15/01/2025", vehicleNo: "OD-05-1234", dieselIssued: 150 },
+    { date: "14/01/2025", vehicleNo: "OD-05-5678", dieselIssued: 175 },
+    { date: "13/01/2025", vehicleNo: "OD-05-9012", dieselIssued: 160 },
+    { date: "12/01/2025", vehicleNo: "OD-05-3456", dieselIssued: 140 },
+    { date: "18/01/2025", vehicleNo: "OD-05-7890", dieselIssued: 180 },
+    { date: "25/01/2025", vehicleNo: "OD-05-1111", dieselIssued: 165 },
   ];
 
-  const totalUnload = dispatchData.reduce((sum, item) => sum + item.quantity, 0);
-  const totalDiesel = dieselData.reduce((sum, item) => sum + item.dieselIssued, 0);
+  const allMaterialData: MaterialData[] = [
+    { date: "15/01/2025", vehicleNo: "OD-05-1234", materialType: "Iron Ore", quantity: 25.5, unit: "Tons" },
+    { date: "14/01/2025", vehicleNo: "OD-05-5678", materialType: "Coal", quantity: 30.2, unit: "Tons" },
+    { date: "13/01/2025", vehicleNo: "OD-05-9012", materialType: "Limestone", quantity: 28.7, unit: "Tons" },
+    { date: "12/01/2025", vehicleNo: "OD-05-3456", materialType: "Iron Ore", quantity: 22.8, unit: "Tons" },
+    { date: "18/01/2025", vehicleNo: "OD-05-7890", materialType: "Coal", quantity: 35.0, unit: "Tons" },
+    { date: "25/01/2025", vehicleNo: "OD-05-1111", materialType: "Bauxite", quantity: 28.5, unit: "Tons" },
+  ];
+
+  // Filter data based on selected month, year, and date range
+  const filterDataByDate = (data: any[]) => {
+    return data.filter(item => {
+      const [day, month, year] = item.date.split('/').map(Number);
+      const itemDate = new Date(year, month - 1, day);
+      const selectedDate = new Date(selectedYear, selectedMonth - 1, 1);
+      
+      // Check if item is in selected month and year
+      if (itemDate.getFullYear() !== selectedYear || itemDate.getMonth() !== selectedMonth - 1) {
+        return false;
+      }
+      
+      // Apply date range filter
+      if (dateFilter === "1-15") {
+        return day >= 1 && day <= 15;
+      } else if (dateFilter === "16-31") {
+        return day >= 16 && day <= 31;
+      }
+      
+      return true; // "all" case
+    });
+  };
+
+  const filteredDispatchData = filterDataByDate(allDispatchData);
+  const filteredDieselData = filterDataByDate(allDieselData);
+  const filteredMaterialData = filterDataByDate(allMaterialData);
+
+  const totalUnload = filteredDispatchData.reduce((sum, item) => sum + item.quantity, 0);
+  const totalDiesel = filteredDieselData.reduce((sum, item) => sum + item.dieselIssued, 0);
 
   useEffect(() => {
     // Check if user is logged in
@@ -266,10 +316,14 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="dispatch" className="flex items-center space-x-2">
                     <Truck className="w-4 h-4" />
                     <span>Dispatch Data</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="material" className="flex items-center space-x-2">
+                    <Package className="w-4 h-4" />
+                    <span>Material</span>
                   </TabsTrigger>
                   <TabsTrigger value="diesel" className="flex items-center space-x-2">
                     <Fuel className="w-4 h-4" />
@@ -283,6 +337,14 @@ const Dashboard = () => {
                       {[...Array(4)].map((_, i) => (
                         <Skeleton key={i} className="h-12 w-full" />
                       ))}
+                    </div>
+                  ) : filteredDispatchData.length === 0 ? (
+                    <div className="text-center py-12">
+                      <FileX className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-muted-foreground mb-2">No Records Found</h3>
+                      <p className="text-sm text-muted-foreground">
+                        No dispatch data available for the selected period.
+                      </p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -298,7 +360,7 @@ const Dashboard = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {dispatchData.map((item, index) => (
+                          {filteredDispatchData.map((item, index) => (
                             <motion.tr
                               key={index}
                               initial={{ opacity: 0, x: -20 }}
@@ -339,12 +401,75 @@ const Dashboard = () => {
                   )}
                 </TabsContent>
 
+                <TabsContent value="material" className="mt-6">
+                  {isLoading ? (
+                    <div className="space-y-3">
+                      {[...Array(4)].map((_, i) => (
+                        <Skeleton key={i} className="h-12 w-full" />
+                      ))}
+                    </div>
+                  ) : filteredMaterialData.length === 0 ? (
+                    <div className="text-center py-12">
+                      <FileX className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-muted-foreground mb-2">No Records Found</h3>
+                      <p className="text-sm text-muted-foreground">
+                        No material data available for the selected period.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Vehicle No</TableHead>
+                            <TableHead>Material Type</TableHead>
+                            <TableHead>Quantity</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredMaterialData.map((item, index) => (
+                            <motion.tr
+                              key={index}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              className="hover:bg-muted/50"
+                            >
+                              <TableCell className="font-medium">{item.date}</TableCell>
+                              <TableCell>{item.vehicleNo}</TableCell>
+                              <TableCell>
+                                <Badge variant="secondary">
+                                  {item.materialType}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="font-mono">
+                                  {item.quantity} {item.unit}
+                                </Badge>
+                              </TableCell>
+                            </motion.tr>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </TabsContent>
+
                 <TabsContent value="diesel" className="mt-6">
                   {isLoading ? (
                     <div className="space-y-3">
                       {[...Array(4)].map((_, i) => (
                         <Skeleton key={i} className="h-12 w-full" />
                       ))}
+                    </div>
+                  ) : filteredDieselData.length === 0 ? (
+                    <div className="text-center py-12">
+                      <FileX className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-muted-foreground mb-2">No Records Found</h3>
+                      <p className="text-sm text-muted-foreground">
+                        No diesel data available for the selected period.
+                      </p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -357,7 +482,7 @@ const Dashboard = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {dieselData.map((item, index) => (
+                          {filteredDieselData.map((item, index) => (
                             <motion.tr
                               key={index}
                               initial={{ opacity: 0, x: -20 }}
