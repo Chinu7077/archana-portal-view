@@ -1,0 +1,343 @@
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { 
+  Download, 
+  Truck, 
+  Fuel, 
+  Calendar, 
+  TrendingUp,
+  MapPin,
+  Clock,
+  LogOut
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+
+interface PartnerInfo {
+  id: string;
+  name: string;
+  isLoggedIn: boolean;
+}
+
+interface DispatchData {
+  date: string;
+  vehicleNo: string;
+  inTime: string;
+  outTime: string;
+  quantity: number;
+  location: string;
+}
+
+interface DieselData {
+  date: string;
+  vehicleNo: string;
+  dieselIssued: number;
+}
+
+const Dashboard = () => {
+  const [partnerInfo, setPartnerInfo] = useState<PartnerInfo | null>(null);
+  const [dateFilter, setDateFilter] = useState("1-15");
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("dispatch");
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // Mock data
+  const dispatchData: DispatchData[] = [
+    { date: "2024-01-15", vehicleNo: "OD-05-1234", inTime: "08:30", outTime: "17:45", quantity: 25.5, location: "Bhubaneswar" },
+    { date: "2024-01-14", vehicleNo: "OD-05-5678", inTime: "09:15", outTime: "18:20", quantity: 30.2, location: "Cuttack" },
+    { date: "2024-01-13", vehicleNo: "OD-05-9012", inTime: "07:45", outTime: "16:30", quantity: 28.7, location: "Rourkela" },
+    { date: "2024-01-12", vehicleNo: "OD-05-3456", inTime: "10:00", outTime: "19:15", quantity: 22.8, location: "Sambalpur" },
+  ];
+
+  const dieselData: DieselData[] = [
+    { date: "2024-01-15", vehicleNo: "OD-05-1234", dieselIssued: 150 },
+    { date: "2024-01-14", vehicleNo: "OD-05-5678", dieselIssued: 175 },
+    { date: "2024-01-13", vehicleNo: "OD-05-9012", dieselIssued: 160 },
+    { date: "2024-01-12", vehicleNo: "OD-05-3456", dieselIssued: 140 },
+  ];
+
+  const totalUnload = dispatchData.reduce((sum, item) => sum + item.quantity, 0);
+  const totalDiesel = dieselData.reduce((sum, item) => sum + item.dieselIssued, 0);
+
+  useEffect(() => {
+    // Check if user is logged in
+    const storedPartnerInfo = localStorage.getItem("partnerInfo");
+    if (storedPartnerInfo) {
+      setPartnerInfo(JSON.parse(storedPartnerInfo));
+    } else {
+      navigate("/login");
+      return;
+    }
+
+    // Simulate loading
+    setTimeout(() => setIsLoading(false), 1000);
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("partnerInfo");
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    });
+    navigate("/login");
+  };
+
+  const handleDownloadExcel = () => {
+    toast({
+      title: "Download Started",
+      description: "Excel file with dispatch and diesel data is being prepared...",
+    });
+    // In real implementation, trigger Excel download
+  };
+
+  if (!partnerInfo) return null;
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="bg-white border-b shadow-card sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                  <Truck className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-semibold text-foreground">Archana Transport</h1>
+                  <p className="text-xs text-muted-foreground">Partner Portal</p>
+                </div>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="flex items-center space-x-2"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Welcome Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+            Welcome back, {partnerInfo.name}
+          </h2>
+          <p className="text-muted-foreground">Here's your transportation dashboard overview</p>
+        </motion.div>
+
+        {/* Date Filter & Download */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="flex flex-col sm:flex-row gap-4 mb-6"
+        >
+          <div className="flex items-center space-x-2">
+            <Calendar className="w-5 h-5 text-primary" />
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1-15">1st to 15th</SelectItem>
+                <SelectItem value="16-31">16th to 30/31</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <Button
+            onClick={handleDownloadExcel}
+            className="bg-gradient-primary hover:shadow-glow transition-all duration-300 animate-glow-pulse"
+            size="sm"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download Excel
+          </Button>
+        </motion.div>
+
+        {/* Stats Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
+        >
+          <Card className="shadow-card border-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Unload</CardTitle>
+              <TrendingUp className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">{totalUnload.toFixed(1)} Tons</div>
+              <Badge variant="secondary" className="mt-2">Period: {dateFilter}</Badge>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card border-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Diesel</CardTitle>
+              <Fuel className="h-4 w-4 text-secondary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-secondary">{totalDiesel} Ltr</div>
+              <Badge variant="secondary" className="mt-2">Period: {dateFilter}</Badge>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Data Tables */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card className="shadow-card border-0">
+            <CardHeader>
+              <CardTitle>Transportation Data</CardTitle>
+              <CardDescription>
+                View your dispatch and diesel consumption records
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="dispatch" className="flex items-center space-x-2">
+                    <Truck className="w-4 h-4" />
+                    <span>Dispatch Data</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="diesel" className="flex items-center space-x-2">
+                    <Fuel className="w-4 h-4" />
+                    <span>Diesel Data</span>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="dispatch" className="mt-6">
+                  {isLoading ? (
+                    <div className="space-y-3">
+                      {[...Array(4)].map((_, i) => (
+                        <Skeleton key={i} className="h-12 w-full" />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Vehicle No</TableHead>
+                            <TableHead className="hidden sm:table-cell">In Time</TableHead>
+                            <TableHead className="hidden sm:table-cell">Out Time</TableHead>
+                            <TableHead>Quantity</TableHead>
+                            <TableHead>Location</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {dispatchData.map((item, index) => (
+                            <motion.tr
+                              key={index}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              className="hover:bg-muted/50"
+                            >
+                              <TableCell className="font-medium">{item.date}</TableCell>
+                              <TableCell>{item.vehicleNo}</TableCell>
+                              <TableCell className="hidden sm:table-cell">
+                                <div className="flex items-center space-x-1">
+                                  <Clock className="w-3 h-3 text-muted-foreground" />
+                                  <span>{item.inTime}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="hidden sm:table-cell">
+                                <div className="flex items-center space-x-1">
+                                  <Clock className="w-3 h-3 text-muted-foreground" />
+                                  <span>{item.outTime}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="font-mono">
+                                  {item.quantity} T
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center space-x-1">
+                                  <MapPin className="w-3 h-3 text-muted-foreground" />
+                                  <span>{item.location}</span>
+                                </div>
+                              </TableCell>
+                            </motion.tr>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="diesel" className="mt-6">
+                  {isLoading ? (
+                    <div className="space-y-3">
+                      {[...Array(4)].map((_, i) => (
+                        <Skeleton key={i} className="h-12 w-full" />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Vehicle No</TableHead>
+                            <TableHead>Diesel Issued</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {dieselData.map((item, index) => (
+                            <motion.tr
+                              key={index}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              className="hover:bg-muted/50"
+                            >
+                              <TableCell className="font-medium">{item.date}</TableCell>
+                              <TableCell>{item.vehicleNo}</TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className="font-mono">
+                                  {item.dieselIssued} L
+                                </Badge>
+                              </TableCell>
+                            </motion.tr>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
