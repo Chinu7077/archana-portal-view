@@ -383,46 +383,152 @@ const Admin = () => {
           </motion.div>
         </div>
 
-        {/* Instructions */}
+        {/* Detailed Instructions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-8"
+          className="mt-8 space-y-6"
         >
+          {/* Dispatch Instructions */}
           <Card className="shadow-card border-0">
             <CardHeader>
-              <CardTitle>Upload Instructions</CardTitle>
+              <CardTitle className="flex items-center space-x-2 text-primary">
+                <Truck className="w-5 h-5" />
+                <span>📧 Admin Upload Instructions - Dispatch Data</span>
+              </CardTitle>
+              <CardDescription>
+                Please upload an Excel file containing dispatch records in the following format:
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium mb-2">Dispatch Data Format</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Partner ID (Column A)</li>
-                    <li>• Date (YYYY-MM-DD)</li>
-                    <li>• Vehicle Number</li>
-                    <li>• In Time (HH:MM)</li>
-                    <li>• Out Time (HH:MM)</li>
-                    <li>• Quantity (Tons)</li>
-                    <li>• Location</li>
+              <div className="bg-accent/50 p-4 rounded-lg">
+                <h4 className="font-semibold mb-3 text-primary">📌 Required Columns:</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-primary rounded-full"></span>
+                      <span><strong>Sl.No</strong></span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-primary rounded-full"></span>
+                      <span><strong>In Date</strong> (Format: YYYY-MM-DD)</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-primary rounded-full"></span>
+                      <span><strong>Out Date</strong> (Format: YYYY-MM-DD)</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-primary rounded-full"></span>
+                      <span><strong>Ref. No</strong></span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-primary rounded-full"></span>
+                      <span><strong>Vehicle No</strong></span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-primary rounded-full"></span>
+                      <span><strong>Gross</strong> (in tons)</span>
+                    </li>
                   </ul>
-                </div>
-                <div>
-                  <h4 className="font-medium mb-2">Diesel Data Format</h4>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Partner ID (Column A)</li>
-                    <li>• Date (YYYY-MM-DD)</li>
-                    <li>• Vehicle Number</li>
-                    <li>• Diesel Issued (Litres)</li>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-primary rounded-full"></span>
+                      <span><strong>Tare</strong> (in tons)</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-primary rounded-full"></span>
+                      <span><strong>Net</strong> (in tons)</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-primary rounded-full"></span>
+                      <span><strong>Challan No</strong></span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-primary rounded-full"></span>
+                      <span><strong>Unloading Point</strong></span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-primary rounded-full"></span>
+                      <span><strong>OWNER NAME</strong> (Partner Name)</span>
+                    </li>
                   </ul>
                 </div>
               </div>
               
-              <div className="pt-4 border-t">
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>⚠️ Note:</strong> Data will be grouped automatically based on the <strong>OWNER NAME</strong> column. 
+                  Ensure that all rows are correctly filled and belong to the correct owner.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="bg-muted/50 p-3 rounded">
                 <p className="text-sm text-muted-foreground">
-                  <strong>Note:</strong> Partner ID will be automatically detected from the first column. 
-                  Ensure all rows in the Excel file belong to the same partner.
+                  <strong>✅ Once uploaded,</strong> each partner will only be able to view their own dispatch records on login.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Diesel Instructions */}
+          <Card className="shadow-card border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2 text-secondary">
+                <Fuel className="w-5 h-5" />
+                <span>⛽ Admin Upload Instructions - Diesel Data</span>
+              </CardTitle>
+              <CardDescription>
+                Please upload an Excel file containing diesel issue records in the following format:
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-accent/50 p-4 rounded-lg">
+                <h4 className="font-semibold mb-3 text-secondary">📌 Required Columns:</h4>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center space-x-2">
+                    <span className="w-2 h-2 bg-secondary rounded-full"></span>
+                    <span><strong>Date</strong> (Format: YYYY-MM-DD)</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span className="w-2 h-2 bg-secondary rounded-full"></span>
+                    <span><strong>Vehicle Number</strong></span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span className="w-2 h-2 bg-secondary rounded-full"></span>
+                    <span><strong>Volume</strong> (Litres)</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span className="w-2 h-2 bg-secondary rounded-full"></span>
+                    <span><strong>Item</strong> (e.g., Diesel)</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span className="w-2 h-2 bg-secondary rounded-full"></span>
+                    <span><strong>Fuel Station</strong></span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span className="w-2 h-2 bg-secondary rounded-full"></span>
+                    <span><strong>Status</strong> (Used / Pending / Approved, etc.)</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <span className="w-2 h-2 bg-secondary rounded-full"></span>
+                    <span><strong>OWNER NAME</strong> (Partner Name – required for filtering data)</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>⚠️ Make sure</strong> the <strong>OWNER NAME</strong> column is correctly filled for every row. 
+                  The system will automatically group data by OWNER NAME and assign it to the respective partner's dashboard.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="bg-muted/50 p-3 rounded">
+                <p className="text-sm text-muted-foreground">
+                  <strong>✅ Each partner</strong> will only see their own diesel records on login.
                 </p>
               </div>
             </CardContent>

@@ -43,6 +43,8 @@ interface DieselData {
 
 const Dashboard = () => {
   const [partnerInfo, setPartnerInfo] = useState<PartnerInfo | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [dateFilter, setDateFilter] = useState("1-15");
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("dispatch");
@@ -143,7 +145,7 @@ const Dashboard = () => {
           <p className="text-muted-foreground">Here's your transportation dashboard overview</p>
         </motion.div>
 
-        {/* Date Filter & Download */}
+        {/* Enhanced Date Filter & Download */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -152,20 +154,60 @@ const Dashboard = () => {
         >
           <div className="flex items-center space-x-2">
             <Calendar className="w-5 h-5 text-primary" />
+            <span className="text-sm font-medium">Filter by:</span>
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+            {/* Month Filter */}
+            <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Month" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">January</SelectItem>
+                <SelectItem value="2">February</SelectItem>
+                <SelectItem value="3">March</SelectItem>
+                <SelectItem value="4">April</SelectItem>
+                <SelectItem value="5">May</SelectItem>
+                <SelectItem value="6">June</SelectItem>
+                <SelectItem value="7">July</SelectItem>
+                <SelectItem value="8">August</SelectItem>
+                <SelectItem value="9">September</SelectItem>
+                <SelectItem value="10">October</SelectItem>
+                <SelectItem value="11">November</SelectItem>
+                <SelectItem value="12">December</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Year Filter */}
+            <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+              <SelectTrigger className="w-24">
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="2024">2024</SelectItem>
+                <SelectItem value="2023">2023</SelectItem>
+                <SelectItem value="2022">2022</SelectItem>
+                <SelectItem value="2021">2021</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Date Range Filter */}
             <Select value={dateFilter} onValueChange={setDateFilter}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-32">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1-15">1st to 15th</SelectItem>
                 <SelectItem value="16-31">16th to 30/31</SelectItem>
+                <SelectItem value="all">Full Month</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
           <Button
             onClick={handleDownloadExcel}
-            className="bg-gradient-primary hover:shadow-glow transition-all duration-300 animate-glow-pulse"
+            className="bg-gradient-primary hover:shadow-glow transition-all duration-300 animate-glow-pulse ml-auto"
             size="sm"
           >
             <Download className="w-4 h-4 mr-2" />
@@ -187,7 +229,10 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-primary">{totalUnload.toFixed(1)} Tons</div>
-              <Badge variant="secondary" className="mt-2">Period: {dateFilter}</Badge>
+              <Badge variant="secondary" className="mt-2">
+                {new Date(selectedYear, selectedMonth - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} 
+                {dateFilter !== 'all' && ` (${dateFilter})`}
+              </Badge>
             </CardContent>
           </Card>
 
@@ -198,7 +243,10 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-secondary">{totalDiesel} Ltr</div>
-              <Badge variant="secondary" className="mt-2">Period: {dateFilter}</Badge>
+              <Badge variant="secondary" className="mt-2">
+                {new Date(selectedYear, selectedMonth - 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} 
+                {dateFilter !== 'all' && ` (${dateFilter})`}
+              </Badge>
             </CardContent>
           </Card>
         </motion.div>

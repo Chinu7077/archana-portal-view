@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Archana Transport Design System - Orange & Blue Theme */
+    /* Archana Transport Design System - Red Theme (matching website) */
     --background: 0 0% 98%;
     --foreground: 215 25% 15%;
 
@@ -18,17 +18,17 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 15%;
 
-    /* Primary Orange Theme */
-    --primary: 20 95% 55%;
+    /* Primary Red Theme (matching website's red button) */
+    --primary: 0 85% 55%;
     --primary-foreground: 0 0% 100%;
-    --primary-light: 25 100% 65%;
-    --primary-dark: 15 90% 45%;
+    --primary-light: 5 95% 65%;
+    --primary-dark: 355 80% 45%;
 
-    /* Secondary Blue Theme */
-    --secondary: 210 85% 50%;
+    /* Secondary Teal Theme (matching website's crane/construction theme) */
+    --secondary: 185 70% 45%;
     --secondary-foreground: 0 0% 100%;
-    --secondary-light: 215 90% 60%;
-    --secondary-dark: 205 80% 40%;
+    --secondary-light: 190 75% 55%;
+    --secondary-dark: 180 65% 35%;
 
     --muted: 210 20% 96%;
     --muted-foreground: 215 15% 55%;
