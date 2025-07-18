@@ -21,12 +21,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-
-interface PartnerInfo {
-  id: string;
-  name: string;
-  isLoggedIn: boolean;
-}
+import { useAuth } from "@/hooks/useAuth";
 
 interface DispatchData {
   date: string;
@@ -52,7 +47,7 @@ interface MaterialData {
 }
 
 const Dashboard = () => {
-  const [partnerInfo, setPartnerInfo] = useState<PartnerInfo | null>(null);
+  const { user, signOut, userRole, isAdmin, isPartner } = useAuth();
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [dateFilter, setDateFilter] = useState("1-15");
@@ -120,25 +115,12 @@ const Dashboard = () => {
   const totalDiesel = filteredDieselData.reduce((sum, item) => sum + item.dieselIssued, 0);
 
   useEffect(() => {
-    // Check if user is logged in
-    const storedPartnerInfo = localStorage.getItem("partnerInfo");
-    if (storedPartnerInfo) {
-      setPartnerInfo(JSON.parse(storedPartnerInfo));
-    } else {
-      navigate("/login");
-      return;
-    }
-
     // Simulate loading
     setTimeout(() => setIsLoading(false), 1000);
-  }, [navigate]);
+  }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("partnerInfo");
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
-    });
+  const handleLogout = async () => {
+    await signOut();
     navigate("/login");
   };
 
@@ -150,7 +132,7 @@ const Dashboard = () => {
     // In real implementation, trigger Excel download
   };
 
-  if (!partnerInfo) return null;
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-background">
@@ -190,7 +172,7 @@ const Dashboard = () => {
           className="mb-8"
         >
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-            Welcome back, {partnerInfo.name}
+            Welcome back, {user?.email || 'Partner'}
           </h2>
           <p className="text-muted-foreground">Here's your transportation dashboard overview</p>
         </motion.div>

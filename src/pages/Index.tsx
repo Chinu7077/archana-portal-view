@@ -4,17 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Truck, Users, FileSpreadsheet, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    // Check if user is already logged in
-    const partnerInfo = localStorage.getItem("partnerInfo");
-    if (partnerInfo) {
+    // Redirect if user is already logged in
+    if (user && !loading) {
       navigate("/dashboard");
     }
-  }, [navigate]);
+  }, [user, loading, navigate]);
 
   return (
     <div className="min-h-screen bg-background">

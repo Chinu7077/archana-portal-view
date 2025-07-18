@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import * as XLSX from 'xlsx';
 
 interface ExcelRow {
@@ -34,6 +35,7 @@ interface PreviewData {
 }
 
 const Admin = () => {
+  const { signOut } = useAuth();
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [dispatchPreview, setDispatchPreview] = useState<PreviewData | null>(null);
@@ -42,12 +44,8 @@ const Admin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogout = () => {
-    localStorage.removeItem("partnerInfo");
-    toast({
-      title: "Admin Logged Out",
-      description: "You have been successfully logged out.",
-    });
+  const handleLogout = async () => {
+    await signOut();
     navigate("/login");
   };
 

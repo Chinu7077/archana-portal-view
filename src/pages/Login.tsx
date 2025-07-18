@@ -1,53 +1,76 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Truck, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/hooks/useAuth";
+import { Loader, User, Mail, Lock, UserPlus, Truck, AlertCircle } from "lucide-react";
 
 const Login = () => {
-  const [partnerId, setPartnerId] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { signIn, signUp, user, loading } = useAuth();
+  
+  // Login form state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  
+  // Signup form state
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && !loading) {
+      navigate("/dashboard");
+    }
+  }, [user, loading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError("");
 
-    // Simulate login process
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    if (partnerId === "admin" && password === "admin123") {
-      toast({
-        title: "Admin Login Successful",
-        description: "Redirecting to admin panel...",
-      });
-      navigate("/admin");
-    } else if (partnerId && password) {
-      // Store partner info in localStorage (in real app, use proper auth)
-      localStorage.setItem("partnerInfo", JSON.stringify({
-        id: partnerId,
-        name: `Partner ${partnerId.toUpperCase()}`,
-        isLoggedIn: true
-      }));
-      toast({
-        title: "Login Successful",
-        description: `Welcome back, Partner ${partnerId.toUpperCase()}!`,
-      });
-      navigate("/dashboard");
+    const { error } = await signIn(email, password);
+    
+    if (error) {
+      setError(error.message);
     } else {
-      setError("Invalid Partner ID or Password");
+      navigate("/dashboard");
     }
-    setIsLoading(false);
+    
+    setIsSubmitting(false);
   };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError("");
+
+    const { error } = await signUp(signupEmail, signupPassword, displayName);
+    
+    if (error) {
+      setError(error.message);
+    }
+    
+    setIsSubmitting(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle">
+        <Loader className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -80,65 +103,170 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="partnerId">Partner ID</Label>
-                <Input
-                  id="partnerId"
-                  type="text"
-                  placeholder="Enter your Partner ID"
-                  value={partnerId}
-                  onChange={(e) => setPartnerId(e.target.value)}
-                  className="h-11"
-                  required
-                />
+            <Tabs defaultValue="login" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="login" className="flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Login
+                </TabsTrigger>
+                <TabsTrigger value="signup" className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Sign Up
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="login">
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      Email
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-11"
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="flex items-center gap-2">
+                      <Lock className="h-4 w-4" />
+                      Password
+                    </Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-11"
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    </motion.div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    className="w-full h-11 bg-gradient-primary hover:shadow-hover transition-all duration-300 font-medium"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader className="mr-2 h-4 w-4 animate-spin" />
+                        Signing in...
+                      </>
+                    ) : (
+                      "Sign In"
+                    )}
+                  </Button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="signup">
+                <form onSubmit={handleSignup} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="displayName" className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Display Name
+                    </Label>
+                    <Input
+                      id="displayName"
+                      type="text"
+                      placeholder="Enter your display name"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      className="h-11"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signupEmail" className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      Email
+                    </Label>
+                    <Input
+                      id="signupEmail"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={signupEmail}
+                      onChange={(e) => setSignupEmail(e.target.value)}
+                      className="h-11"
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signupPassword" className="flex items-center gap-2">
+                      <Lock className="h-4 w-4" />
+                      Password
+                    </Label>
+                    <Input
+                      id="signupPassword"
+                      type="password"
+                      placeholder="Create a password"
+                      value={signupPassword}
+                      onChange={(e) => setSignupPassword(e.target.value)}
+                      className="h-11"
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    </motion.div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    className="w-full h-11 bg-gradient-primary hover:shadow-hover transition-all duration-300 font-medium"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader className="mr-2 h-4 w-4 animate-spin" />
+                        Creating account...
+                      </>
+                    ) : (
+                      "Create Account"
+                    )}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+
+            <div className="mt-6">
+              <Separator className="my-4" />
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">Demo Credentials</p>
+                <div className="text-xs space-y-1 text-muted-foreground">
+                  <p>After signing up, create admin/partner roles in Supabase</p>
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-11"
-                  required
-                />
-              </div>
-
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                </motion.div>
-              )}
-
-              <Button
-                type="submit"
-                className="w-full h-11 bg-gradient-primary hover:shadow-hover transition-all duration-300 font-medium"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                  />
-                ) : (
-                  "Sign In"
-                )}
-              </Button>
-            </form>
-
-            <div className="mt-6 text-center text-sm text-muted-foreground">
-              <p>Demo Credentials:</p>
-              <p className="font-mono">Partner ID: demo | Password: demo123</p>
-              <p className="font-mono">Admin: admin | Password: admin123</p>
             </div>
           </CardContent>
         </Card>
